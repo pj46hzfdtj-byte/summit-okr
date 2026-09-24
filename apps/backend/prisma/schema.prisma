@@ -1,0 +1,378 @@
+// Prisma schema for Summit OKR
+// 详见文档: SUMMIT_OKR_开发需求文档.md
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ 用户 ============
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  username        String   @unique
+  passwordHash    String
+  avatar          String?
+  bio             String?
+  birthDate       DateTime?  // 用户生日，用于愿景年龄计算
+  preferredLocale String   @default("zh-CN") // zh-CN | zh-TW | en-US | ja-JP
+  preferredTheme  String   @default("light") // light | dark | blue | green | purple
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  visions       Vision[]
+  goalGroups    GoalGroup[]
+  objectives    Objective[]
+  tasks         Task[]
+  focusCycles   FocusCycle[]
+  memos         Memo[]
+  reviews       Review[]
+  feedbacks     Feedback[]
+  aiConversations AiConversation[]
+  aiUsage       AiUsage[]
+  setting       UserSetting?
+  checkIns      CheckIn[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+// ============ 个人愿景 ============
+model Vision {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String
+  startAge  Int?
+  endAge    Int?
+  status    String   @default("upcoming") // upcoming | in_progress | achieved | expired
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalGroups  GoalGroup[]
+
+  @@index([userId])
+  @@map("visions")
+}
+
+// ============ 目标节点（GoalGroup） ============
+model GoalGroup {
+  id        String   @id @default(uuid())
+  userId    String
+  parentId  String?   // 自引用，null 表示根节点
+  visionId  String?   // 所属愿景（仅根节点有值），目标通过所在树自动归属愿景
+  name      String
+  color     String   @default("#409EFF")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vision     Vision?     @relation(fields: [visionId], references: [id], onDelete: Cascade)
+  parent     GoalGroup?  @relation("GoalGroupTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children   GoalGroup[] @relation("GoalGroupTree")
+  objectives Objective[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@index([visionId])
+  @@map("goal_groups")
+}
+
+// ============ 目标（Objective） ============
+model Objective {
+  id           String   @id @default(uuid())
+  userId       String
+  goalGroupId  String
+  title        String
+  color        String   @default("#409EFF")
+  startAt      DateTime? // null → 未计划
+  endAt        DateTime? // null → 未计划
+  // 动机列表（多条）+ 可行性列表（多条）→ StringB 数组
+  motivations  String     @default("[]") // string[]
+  feasibilities String    @default("[]") // string[]
+  status       String   @default("unplanned") // unplanned | not_started | in_progress | pending_review | completed
+  weight       Int      @default(100) // 在所属专注周期中的权重
+  deletedAt    DateTime? // 软删除（回收站），null = 正常
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalGroup    GoalGroup     @relation(fields: [goalGroupId], references: [id], onDelete: Cascade)
+  keyResults   KeyResult[]
+  reviews      Review[]
+  focusCycles  FocusCycleObjective[]
+  tasks        Task[]
+
+  @@index([userId])
+  @@index([goalGroupId])
+  @@index([status])
+  @@index([userId, deletedAt])
+  @@map("objectives")
+}
+
+// ============ 关键结果（KeyResult） ============
+model KeyResult {
+  id              String   @id @default(uuid())
+  objectiveId     String
+  title           String
+  emoji           String   @default("🌟")
+  initialValue    Float
+  targetValue     Float
+  currentValue    Float    @default(0) // 由 records 聚合计算
+  calculationType String   @default("sum") // sum | final | average | max | custom
+  customFormula   String?  // 当 calculationType=custom 时使用
+  weight          Int      @default(100) // 在所属目标中的权重
+  minRecordCount  Int      @default(0) // 最少记录数限制
+  sortOrder       Int      @default(0)
+  confidence      String   @default("on_track") // on_track | at_risk | off_track（红绿灯信心度）
+  deletedAt       DateTime? // 软删除（回收站），null = 正常
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  records   Record[]
+
+  @@index([objectiveId])
+  @@map("key_results")
+}
+
+// ============ 记录（Record） ============
+model Record {
+  id           String   @id @default(uuid())
+  keyResultId  String
+  value        Float
+  note         String?
+  recordedAt   DateTime @default(now()) // 记录的发生时间
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+
+  @@index([keyResultId])
+  @@index([recordedAt])
+  @@map("records")
+}
+
+// ============ 备忘（Memo） ============
+model Memo {
+  id        String   @id @default(uuid())
+  userId    String
+  ownerType String   // record | key_result | objective
+  ownerId   String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ownerType, ownerId])
+  @@map("memos")
+}
+
+// ============ 任务（Task） ============
+model Task {
+  id                String   @id @default(uuid())
+  userId            String
+  objectiveId       String?  // 任务独立于 KR，仅关联目标作为参考
+  title             String
+  description       String?
+  status            String   @default("pending") // pending | completed
+  completedAt       DateTime?
+  scheduledAt       DateTime? // 计划时间（用于列表排序）
+  repeatRule        String   @default("none") // none | daily | weekly | monthly | yearly | weekdays
+  repeatEndDate     DateTime?
+  contribution      String?  // 对关键结果的贡献描述
+  syncedToCalendar  Boolean  @default(false) // 是否已同步到系统日历
+  deletedAt         DateTime? // 软删除（回收站），null = 正常
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objective Objective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@index([userId, deletedAt])
+  @@map("tasks")
+}
+
+// ============ 专注周期（FocusCycle） ============
+model FocusCycle {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  startAt   DateTime // = 周期内最早目标的开始时间
+  endAt     DateTime // = 周期内最晚目标的结束时间（含当日 23:59:59）
+  isActive  Boolean  @default(true) // 同一用户全局唯一活跃周期
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objectives FocusCycleObjective[]
+
+  @@index([userId, isActive])
+  // 同一用户全局只能有一个活跃周期：通过应用层 + 部分唯一索引保障
+  // PostgreSQL 部分唯一索引：CREATE UNIQUE INDEX one_active_cycle_per_user ON focus_cycles(user_id) WHERE is_active = true;
+  @@map("focus_cycles")
+}
+
+// ============ 专注周期-目标 关联 ============
+model FocusCycleObjective {
+  id           String  @id @default(uuid())
+  focusCycleId String
+  objectiveId  String
+  weight       Int     @default(100) // 该目标在周期中的权重
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  focusCycle FocusCycle @relation(fields: [focusCycleId], references: [id], onDelete: Cascade)
+  objective  Objective  @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+
+  @@unique([focusCycleId, objectiveId])
+  @@index([focusCycleId])
+  @@index([objectiveId])
+  @@map("focus_cycle_objectives")
+}
+
+// ============ 复盘（Review） ============
+model Review {
+  id             String   @id @default(uuid())
+  objectiveId    String
+  userId         String
+  type           String   // midterm | final
+  version        Int      @default(1) // 期中复盘支持版本控制
+  krScores       String     // KrScore[] = [{keyResultId, score, note}]
+  selfRating     Float    // 0-1
+  objectiveScore Int?     // 期末复盘时计算的目标得分（0-100）
+  problems       String?  // 总结问题
+  solutions      String?  // 解决办法
+  thoughts       String?  // 感想
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([objectiveId])
+  @@index([userId, type])
+  @@map("reviews")
+}
+
+// ============ 用户设置（独立表，可选） ============
+model UserSetting {
+  id     String @id @default(uuid())
+  userId String @unique
+  data   String   @default("{}") // 任意键值对（紧凑模式、通知偏好等）
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+// ============ 意见反馈 ============
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // bug | suggestion | other
+  content   String
+  contact   String?
+  status    String   @default("open") // open | resolved
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("feedbacks")
+}
+
+// ============ AI 对话 ============
+model AiConversation {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  intent    String   // plan_goal | plan_tasks | suggest_score | suggest_motivations
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+
+  @@index([userId])
+  @@map("ai_conversations")
+}
+
+// ============ AI 消息 ============
+model AiMessage {
+  id             String   @id @default(uuid())
+  conversationId String
+  role           String   // user | assistant
+  content        String
+  metadata       String     @default("{}") // 存原始请求/响应、应用结果等
+  tokensUsed     Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+// ============ AI 用量 ============
+model AiUsage {
+  id         String   @id @default(uuid())
+  userId     String
+  intent     String
+  tokensUsed Int      @default(0)
+  model      String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_usage")
+}
+
+// ============ 每周 Check-in（进度更新节奏） ============
+model CheckIn {
+  id        String   @id @default(uuid())
+  userId    String
+  weekStart DateTime // 该周周一 00:00（本地时区归一化）
+  note      String?  // 本周进展/困难一句话
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@index([userId])
+  @@map("check_ins")
+}
+
+// ============ 通知（提醒中心） ============
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String   // stale_kr | cycle_ending | review_pending | task_overdue | checkin_reminder
+  title     String
+  body      String?
+  link      String?  // 前端路由跳转
+  dedupeKey String   // 同规则幂等键，避免重复生成
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, dedupeKey])
+  @@index([userId, read])
+  @@map("notifications")
+}

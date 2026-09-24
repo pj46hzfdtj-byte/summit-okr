@@ -1,0 +1,735 @@
+/**
+ * Summit OKR 多主题系统
+ * 5 种主题：浅色 / 深色 / 蓝色 / 绿色 / 紫色
+ * 通过覆盖 Element Plus CSS 变量实现
+ */
+
+// ============ 蓝色主题 ============
+.theme-blue {
+  --el-color-primary: #1a73e8;
+  --el-color-primary-light-1: #3584e9;
+  --el-color-primary-light-2: #5095eb;
+  --el-color-primary-light-3: #6ba6ed;
+  --el-color-primary-light-4: #86b7ef;
+  --el-color-primary-light-5: #a1c8f1;
+  --el-color-primary-light-6: #bcd9f3;
+  --el-color-primary-light-7: #d7eaf5;
+  --el-color-primary-light-8: #eaf3fb;
+  --el-color-primary-light-9: #f2f7fd;
+  --el-color-primary-dark-2: #1567c4;
+  --el-bg-color-page: #f0f5ff;
+}
+
+// ============ 绿色主题 ============
+.theme-green {
+  --el-color-primary: #2e7d32;
+  --el-color-primary-light-1: #44883a;
+  --el-color-primary-light-2: #5a9442;
+  --el-color-primary-light-3: #6e9f50;
+  --el-color-primary-light-4: #83aa5e;
+  --el-color-primary-light-5: #97b56c;
+  --el-color-primary-light-6: #abc07a;
+  --el-color-primary-light-7: #c0d3a8;
+  --el-color-primary-light-8: #d4e1c4;
+  --el-color-primary-light-9: #e9efe2;
+  --el-color-primary-dark-2: #246128;
+  --el-bg-color-page: #f1f8f1;
+}
+
+// ============ 紫色主题 ============
+.theme-purple {
+  --el-color-primary: #7c3aed;
+  --el-color-primary-light-1: #8c4fef;
+  --el-color-primary-light-2: #9b6af1;
+  --el-color-primary-light-3: #ab85f3;
+  --el-color-primary-light-4: #ba9ff5;
+  --el-color-primary-light-5: #c9b9f7;
+  --el-color-primary-light-6: #d8c4f9;
+  --el-color-primary-light-7: #e6d3fb;
+  --el-color-primary-light-8: #f0e1fd;
+  --el-color-primary-light-9: #f8f0fe;
+  --el-color-primary-dark-2: #6531c4;
+  --el-bg-color-page: #f5f0fb;
+}
+
+// ============ macOS 主题（Tahoe Liquid Glass · 毛玻璃） ============
+// 设计参考：WWDC25 "Get to know the new design system" / Adopting Liquid Glass / Apple HIG
+// 注：必须用 html.theme-macos（特异性 0,1,1）压过 main.scss 中后加载的 :root token，
+// 否则 --transition-*、--font-size-* 会被 :root 的默认值覆盖。
+html.theme-macos {
+  // 字体：SF Pro 优先，Windows 回退 Segoe UI，中文回退苹方/微软雅黑
+  --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro SC",
+    "Segoe UI Variable", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "SF Mono", "JetBrains Mono", ui-monospace, "Cascadia Code",
+    Consolas, monospace;
+
+  // macOS 字号层级（HIG macOS：Body 13px 为控件标准，Title3 15 / Headline 15 semibold）
+  --font-size-xs: 10px;
+  --font-size-sm: 11px;
+  --font-size-base: 13px;
+  --font-size-md: 15px;
+  --font-size-lg: 17px;
+  --font-size-xl: 22px;
+  --font-size-2xl: 26px;
+
+  // 品牌色：macOS 系统蓝
+  --summit-primary: #007aff;
+  --summit-secondary: #5ac8fa;
+  --summit-accent: #ff9f0a;
+  --summit-success: #34c759;
+  --summit-danger: #ff3b30;
+  --summit-border: rgba(0, 122, 255, 0.25);
+  --summit-ring: #007aff;
+
+  // 圆角与动效（macOS Tahoe：控件 8-12px，窗口 16px，悬浮面板/卡片 19-20px）
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --transition-fast: 150ms cubic-bezier(0.32, 0.72, 0, 1);
+  --transition-base: 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  --transition-slow: 320ms cubic-bezier(0.32, 0.72, 0, 1);
+
+  // Element Plus 变量覆写
+  --el-color-primary: #007aff;
+  --el-color-primary-light-1: #1a87ff;
+  --el-color-primary-light-2: #3393ff;
+  --el-color-primary-light-3: #4da0ff;
+  --el-color-primary-light-4: #66acff;
+  --el-color-primary-light-5: #80bfff;
+  --el-color-primary-light-6: #99ccff;
+  --el-color-primary-light-7: #b3d9ff;
+  --el-color-primary-light-8: #cce5ff;
+  --el-color-primary-light-9: #e6f2ff;
+  --el-color-primary-dark-2: #0062cc;
+  --el-border-radius-base: 10px;
+  --el-border-radius-small: 8px;
+  --el-font-size-base: 13px;
+  --el-font-size-small: 12px;
+  --el-font-size-extra-small: 11px;
+
+  // 文本：Apple HIG Label 透明灰阶（0.85 / 0.62 / 0.5 / 0.25）
+  --el-text-color-primary: rgba(0, 0, 0, 0.85);
+  --el-text-color-regular: rgba(0, 0, 0, 0.68);
+  --el-text-color-secondary: rgba(0, 0, 0, 0.5);
+  --el-text-color-placeholder: rgba(0, 0, 0, 0.25);
+
+  // 表面：半透明玻璃
+  --el-bg-color: rgba(249, 249, 249, 0.78);
+  --el-bg-color-page: transparent;
+  --el-bg-color-overlay: rgba(250, 250, 250, 0.9);
+  --el-fill-color-blank: rgba(255, 255, 255, 0.72);
+  --el-fill-color-light: rgba(0, 0, 0, 0.045);
+  --el-fill-color-lighter: rgba(0, 0, 0, 0.03);
+
+  // 描边：hairline
+  --el-border-color: rgba(0, 0, 0, 0.12);
+  --el-border-color-light: rgba(0, 0, 0, 0.09);
+  --el-border-color-lighter: rgba(0, 0, 0, 0.07);
+  --el-border-color-extra-light: rgba(0, 0, 0, 0.05);
+
+  // 开关：macOS 绿
+  --el-switch-on-color: #34c759;
+
+  // 表格透明
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(0, 0, 0, 0.03);
+  --el-table-border-color: rgba(0, 0, 0, 0.07);
+
+  // 阴影：柔和深度
+  --el-box-shadow-light: 0 4px 20px rgba(0, 0, 0, 0.07);
+  --el-box-shadow: 0 12px 40px rgba(0, 0, 0, 0.14);
+}
+
+// Tahoe 渐变壁纸底色（柔和多色光斑，玻璃层后方有内容可折射）
+html.theme-macos body {
+  background-image:
+    radial-gradient(52rem 34rem at 8% -6%, rgba(120, 170, 255, 0.5), transparent 60%),
+    radial-gradient(46rem 32rem at 92% 12%, rgba(255, 190, 230, 0.42), transparent 62%),
+    radial-gradient(50rem 36rem at 70% 105%, rgba(160, 230, 220, 0.4), transparent 60%),
+    radial-gradient(40rem 28rem at 22% 88%, rgba(255, 220, 170, 0.35), transparent 62%),
+    linear-gradient(120deg, #eef3fb 0%, #f3eef8 45%, #eef6f6 100%);
+  background-attachment: fixed;
+
+  // macOS 文字渲染：抗锯齿 + 轻微负字距（SF Pro Text 13px 约 -0.08px tracking）
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.01em;
+}
+
+// 选区：系统蓝淡底（macOS 默认高亮）
+html.theme-macos ::selection {
+  background: rgba(0, 122, 255, 0.22);
+}
+
+// ============ 玻璃布局：让内容从顶栏/侧栏下方穿过 ============
+// backdrop-filter 只能折射"元素背后"的像素。默认 flex 布局里顶栏与内容互不重叠，
+// 玻璃后方只有纯色壁纸 → 模糊等于没效果。把 body-area 上提 56px 塞进顶栏下方，
+// 滚动时卡片真正从玻璃条下穿过，毛玻璃才看得见（macOS unified toolbar 的做法）。
+.theme-macos .app-layout .body-area {
+  margin-top: -56px;
+}
+
+// macOS toolbar 材质实测约 rgba(246,246,246,0.7)、sidebar 约 0.8：偏白、只留一丝通透
+.theme-macos .app-layout .topbar {
+  background: linear-gradient(
+    180deg,
+    rgba(250, 250, 252, 0.78) 0%,
+    rgba(246, 246, 250, 0.7) 100%
+  );
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 6px 24px rgba(0, 0, 0, 0.06);
+}
+
+.theme-macos .app-layout .sidebar {
+  background: rgba(246, 246, 250, 0.72);
+  backdrop-filter: blur(36px) saturate(180%);
+  -webkit-backdrop-filter: blur(36px) saturate(180%);
+  border-right: 1px solid rgba(0, 0, 0, 0.07);
+  // 顶部 56px 藏在玻璃顶栏后面，导航从顶栏下方开始
+  padding-top: 56px;
+}
+
+.theme-macos .app-layout .app-content {
+  background: transparent;
+  // 56px 顶栏 + 原有留白
+  padding-top: calc(56px + var(--space-lg));
+}
+
+// 卡片玻璃化（Liquid Glass regular：渐变白 + 上缘内高光）
+.theme-macos .el-card,
+.theme-macos .summit-card,
+.theme-macos .kpi-card {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.52) 100%
+  );
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  // Tahoe 悬浮面板规格：19-20px
+  border-radius: 20px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+// ============ 侧边栏：macOS Source List（HIG: subtle highlight, not loud block） ============
+.theme-macos .app-layout .sidebar-nav {
+  padding: 10px 8px;
+  gap: 1px;
+}
+
+.theme-macos .app-layout .nav-item {
+  height: 30px;
+  padding: 0 8px;
+  gap: 8px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.65);
+  transition: background-color 120ms ease, color 120ms ease, transform 100ms ease;
+}
+
+.theme-macos .app-layout .nav-item:hover {
+  background: rgba(120, 120, 128, 0.12);
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.theme-macos .app-layout .nav-item:active {
+  transform: scale(0.97);
+}
+
+// 选中态：系统蓝 20% 柔和底 + 深蓝字（非大蓝块白字）
+.theme-macos .app-layout .nav-item.is-active {
+  background: rgba(0, 122, 255, 0.2);
+  color: #004085;
+}
+
+.theme-macos .app-layout .nav-item.is-active .nav-icon {
+  color: #007aff;
+}
+
+.theme-macos .app-layout .nav-icon {
+  font-size: 15px;
+}
+
+// ============ 丝滑交互：按下即响应（WWDC Designing Fluid Interfaces） ============
+.theme-macos .el-button {
+  transition: transform 100ms ease-out, background-color 150ms ease,
+    border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.theme-macos .el-button:active {
+  transform: scale(0.96);
+}
+
+.theme-macos .el-button--primary:not(.is-disabled):hover {
+  background: #1a87ff;
+  border-color: #1a87ff;
+}
+
+.theme-macos .app-layout .collapse-btn:active,
+.theme-macos .app-layout .user-chip:active {
+  transform: scale(0.94);
+}
+
+// 焦点环：macOS = 强调色 3-4px + 2px offset（HIG Focus Ring）
+.theme-macos .el-button:focus-visible,
+.theme-macos .app-layout .collapse-btn:focus-visible,
+.theme-macos .app-layout .nav-item:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.85), 0 0 0 4px rgba(0, 122, 255, 0.25);
+}
+
+.theme-macos .el-input__wrapper.is-focus,
+.theme-macos .el-textarea__inner:focus {
+  box-shadow:
+    0 0 0 1px #007aff inset,
+    0 0 0 3.5px rgba(0, 122, 255, 0.22);
+  transition: box-shadow 120ms ease-out;
+}
+
+// 页面转场：fade + 轻微上移（html 前缀提高特异性，压过组件 scoped 同名规则）
+html.theme-macos .fade-enter-active,
+html.theme-macos .fade-leave-active {
+  transition: opacity 220ms cubic-bezier(0.32, 0.72, 0, 1),
+    transform 260ms cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+
+html.theme-macos .fade-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+html.theme-macos .fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+// 弹窗 spring 回弹（进入过冲回弹）
+.theme-macos .el-overlay-dialog .el-dialog {
+  animation: macos-dialog-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes macos-dialog-in {
+  from {
+    transform: scale(0.88) translateY(12px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+// 下拉/气泡弹出：轻微缩放渐入
+.theme-macos .el-popper {
+  animation: macos-popper-in 180ms cubic-bezier(0.32, 0.72, 0, 1) both;
+}
+
+@keyframes macos-popper-in {
+  from {
+    transform: scale(0.96) translateY(-4px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+// 对话框：浮动窗口感
+.theme-macos .el-dialog {
+  border-radius: 16px;
+  background: rgba(246, 246, 246, 0.86);
+  backdrop-filter: blur(30px) saturate(180%);
+  -webkit-backdrop-filter: blur(30px) saturate(180%);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.theme-macos .el-overlay {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+// 浮层（下拉 / 气泡 / 日期面板）：macOS 菜单 ≈ 12px
+.theme-macos .el-popper {
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 36px rgba(0, 0, 0, 0.14);
+}
+
+// 浅色浮层毛玻璃（头像下拉菜单等；is-light 提高特异性压过 EP 默认底色）
+.theme-macos .el-popper.is-light {
+  background: rgba(246, 246, 250, 0.72);
+  backdrop-filter: blur(26px) saturate(180%);
+  -webkit-backdrop-filter: blur(26px) saturate(180%);
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+// 菜单本体与内部分隔透明，让玻璃底透出来
+.theme-macos .el-popper.is-light .el-dropdown-menu,
+.theme-macos .el-popper.is-light .el-dropdown-menu__item,
+.theme-macos .el-popper.is-light .el-popper__arrow::before {
+  background: transparent;
+}
+
+.theme-macos .el-popper.is-light .el-dropdown-menu__item:hover {
+  background: rgba(120, 120, 128, 0.14);
+}
+
+.theme-macos .el-popper.is-light .el-dropdown-menu__item--divided {
+  border-top-color: rgba(0, 0, 0, 0.08);
+}
+
+// 输入框
+.theme-macos .el-input__wrapper,
+.theme-macos .el-textarea__inner {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.75);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08) inset;
+}
+
+// 按钮
+.theme-macos .el-button {
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.theme-macos .el-button--default {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+// 标签：胶囊形
+.theme-macos .el-tag {
+  border-radius: 999px;
+}
+
+// 分段控件（Profile 主题/语言选择）
+.theme-macos .el-radio-group {
+  background: rgba(120, 120, 128, 0.12);
+  border-radius: 9px;
+  padding: 2px;
+  display: inline-flex;
+  gap: 2px;
+  border: none;
+}
+
+.theme-macos .el-radio-button__inner {
+  background: transparent;
+  border: none;
+  box-shadow: none !important;
+  border-radius: 7px;
+  color: #3a3a3c;
+  font-weight: 500;
+  padding: 7px 14px;
+}
+
+.theme-macos .el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background: #ffffff;
+  color: #1d1d1f;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18) !important;
+}
+
+// 滚动条：macOS overlay 风格
+.theme-macos ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 4px;
+}
+
+.theme-macos ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.28);
+}
+
+// Loading 遮罩：玻璃化 + 圆角（默认直角矩形会盖出卡片圆角之外）
+.theme-macos .el-loading-mask {
+  background: rgba(246, 246, 250, 0.6);
+  backdrop-filter: blur(10px) saturate(160%);
+  -webkit-backdrop-filter: blur(10px) saturate(160%);
+  border-radius: 20px;
+  transition: opacity var(--transition-base);
+}
+
+// 贴满整页的遮罩（v-loading 挂在页面根容器上）不需要圆角，避免四角漏壁纸
+.theme-macos .el-loading-mask.is-fullscreen {
+  border-radius: 0;
+}
+
+// 加载指示器：macOS 系统蓝 spinner + 13px 次要文字
+.theme-macos .el-loading-spinner .path {
+  stroke: #007aff;
+}
+
+.theme-macos .el-loading-spinner .el-loading-text {
+  color: rgba(0, 0, 0, 0.5);
+  font-size: 13px;
+}
+
+// ============ macOS 主题 · 夜间外观（深色 Liquid Glass） ============
+// 选择器 html.theme-macos.dark（0,2,1）压过浅色版与 EP 的 html.dark 变量
+html.theme-macos.dark {
+  // 品牌色：深色模式下 Apple 用更亮的系统蓝 #0A84FF
+  --summit-primary: #0a84ff;
+  --summit-secondary: #64d2ff;
+  --summit-accent: #ff9f0a;
+  --summit-success: #30d158;
+  --summit-danger: #ff453a;
+  --summit-border: rgba(10, 132, 255, 0.3);
+  --summit-ring: #0a84ff;
+
+  --el-color-primary: #0a84ff;
+  --el-color-primary-light-1: #2291ff;
+  --el-color-primary-light-2: #3d9dff;
+  --el-color-primary-light-3: #57a9ff;
+  --el-color-primary-light-4: #72b6ff;
+  --el-color-primary-light-5: #8cc2ff;
+  --el-color-primary-light-6: #a6ceff;
+  --el-color-primary-light-7: #c1dbff;
+  --el-color-primary-light-8: #dbeeff;
+  --el-color-primary-light-9: #16202e;
+  --el-color-primary-dark-2: #0066cc;
+
+  // 文本：深色 Label 透明灰阶（HIG：0.85 / 0.55 / 0.25）
+  --el-text-color-primary: rgba(255, 255, 255, 0.87);
+  --el-text-color-regular: rgba(255, 255, 255, 0.72);
+  --el-text-color-secondary: rgba(255, 255, 255, 0.55);
+  --el-text-color-placeholder: rgba(255, 255, 255, 0.28);
+
+  // 玻璃表面：深色材质（提高透明度让壁纸透出）
+  --el-bg-color: rgba(38, 38, 44, 0.72);
+  --el-bg-color-overlay: rgba(46, 46, 54, 0.86);
+  --el-fill-color-blank: rgba(255, 255, 255, 0.06);
+  --el-fill-color-light: rgba(255, 255, 255, 0.09);
+  --el-fill-color-lighter: rgba(255, 255, 255, 0.06);
+
+  --el-border-color: rgba(255, 255, 255, 0.16);
+  --el-border-color-light: rgba(255, 255, 255, 0.12);
+  --el-border-color-lighter: rgba(255, 255, 255, 0.09);
+  --el-border-color-extra-light: rgba(255, 255, 255, 0.06);
+
+  --el-switch-on-color: #30d158;
+
+  --el-table-bg-color: transparent;
+  --el-table-tr-bg-color: transparent;
+  --el-table-header-bg-color: rgba(255, 255, 255, 0.05);
+  --el-table-border-color: rgba(255, 255, 255, 0.09);
+
+  --el-box-shadow-light: 0 4px 20px rgba(0, 0, 0, 0.35);
+  --el-box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
+}
+
+// 夜间壁纸：深色 Aurora 光斑（玻璃后方有内容可折射）
+html.theme-macos.dark body {
+  background-image:
+    radial-gradient(52rem 34rem at 8% -6%, rgba(30, 80, 180, 0.45), transparent 60%),
+    radial-gradient(46rem 32rem at 92% 12%, rgba(140, 60, 160, 0.35), transparent 62%),
+    radial-gradient(50rem 36rem at 70% 105%, rgba(20, 110, 120, 0.32), transparent 60%),
+    radial-gradient(40rem 28rem at 22% 88%, rgba(150, 90, 40, 0.25), transparent 62%),
+    linear-gradient(120deg, #15161c 0%, #191622 45%, #14191d 100%);
+  background-attachment: fixed;
+}
+
+html.theme-macos.dark ::selection {
+  background: rgba(10, 132, 255, 0.35);
+}
+
+// 布局玻璃（深色版）
+html.theme-macos.dark .app-layout .topbar {
+  background: linear-gradient(
+    180deg,
+    rgba(42, 42, 50, 0.62) 0%,
+    rgba(36, 36, 44, 0.55) 100%
+  );
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 6px 24px rgba(0, 0, 0, 0.35);
+}
+
+html.theme-macos.dark .app-layout .sidebar {
+  background: rgba(34, 34, 42, 0.6);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+// 卡片玻璃（深色：微透明白高光换为顶部弱高光）
+html.theme-macos.dark .el-card,
+html.theme-macos.dark .summit-card,
+html.theme-macos.dark .kpi-card {
+  background: linear-gradient(
+    135deg,
+    rgba(90, 90, 105, 0.38) 0%,
+    rgba(58, 58, 70, 0.28) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+// 侧边栏导航（深色 Source List）
+html.theme-macos.dark .app-layout .nav-item {
+  color: rgba(255, 255, 255, 0.68);
+}
+
+html.theme-macos.dark .app-layout .nav-item:hover {
+  background: rgba(120, 120, 128, 0.32);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+html.theme-macos.dark .app-layout .nav-item.is-active {
+  background: rgba(10, 132, 255, 0.32);
+  color: #d6eaff;
+}
+
+html.theme-macos.dark .app-layout .nav-item.is-active .nav-icon {
+  color: #64b5ff;
+}
+
+// 对话框 / 浮层 / 输入 / 按钮 / 分段控件（深色玻璃）
+html.theme-macos.dark .el-dialog {
+  background: rgba(46, 46, 54, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.55);
+}
+
+html.theme-macos.dark .el-overlay {
+  background: rgba(0, 0, 0, 0.45);
+}
+
+html.theme-macos.dark .el-popper.is-light {
+  background: rgba(48, 48, 58, 0.78);
+  border-color: rgba(255, 255, 255, 0.12);
+  box-shadow:
+    0 10px 36px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+html.theme-macos.dark .el-popper.is-light .el-dropdown-menu__item:hover {
+  background: rgba(120, 120, 128, 0.32);
+}
+
+html.theme-macos.dark .el-input__wrapper,
+html.theme-macos.dark .el-textarea__inner {
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.14) inset;
+}
+
+html.theme-macos.dark .el-input__wrapper.is-focus,
+html.theme-macos.dark .el-textarea__inner:focus {
+  box-shadow:
+    0 0 0 1px #0a84ff inset,
+    0 0 0 3.5px rgba(10, 132, 255, 0.28);
+}
+
+html.theme-macos.dark .el-button--default {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.87);
+}
+
+html.theme-macos.dark .el-button--default:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.22);
+  color: #fff;
+}
+
+html.theme-macos.dark .el-radio-group {
+  background: rgba(120, 120, 128, 0.32);
+}
+
+html.theme-macos.dark .el-radio-button__inner {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+html.theme-macos.dark .el-radio-button__original-radio:checked + .el-radio-button__inner {
+  background: #6b6b78;
+  color: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.theme-macos.dark .el-loading-mask {
+  background: rgba(28, 28, 34, 0.6);
+}
+
+html.theme-macos.dark .el-loading-spinner .path {
+  stroke: #0a84ff;
+}
+
+html.theme-macos.dark .el-loading-spinner .el-loading-text {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html.theme-macos.dark ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+html.theme-macos.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+// ============ Traffic-light 窗口灯（仅 macOS 主题显示） ============
+.traffic-lights {
+  display: none;
+}
+
+.theme-macos .traffic-lights {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+.theme-macos .tl {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.theme-macos .tl-close {
+  background: #ff5f57;
+}
+
+.theme-macos .tl-min {
+  background: #febc2e;
+}
+
+.theme-macos .tl-max {
+  background: #28c840;
+}
+
+// ============ 紧凑模式 ============
+.compact-mode {
+  // 缩小页面间距
+  .page-header {
+    margin-bottom: 8px !important;
+  }
+  .page-title {
+    font-size: 18px !important;
+  }
+  // 缩小卡片内边距
+  .el-card__body {
+    padding: 12px !important;
+  }
+  // 缩小列表行高
+  .task-row {
+    padding: 4px 0 !important;
+  }
+  // 缩小树节点高度
+  .el-tree-node__content {
+    height: 28px !important;
+  }
+}

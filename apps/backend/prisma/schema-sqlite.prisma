@@ -1,0 +1,316 @@
+// Prisma schema for Summit OKR — SQLite 本地模式（无需 Docker）
+// 与 schema.prisma 内容一致，仅 provider 改为 sqlite
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============ 用户 ============
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  username        String   @unique
+  passwordHash    String
+  avatar          String?
+  bio             String?
+  birthDate       DateTime?
+  preferredLocale String   @default("zh-CN")
+  preferredTheme  String   @default("light")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  visions       Vision[]
+  goalGroups    GoalGroup[]
+  objectives    Objective[]
+  tasks          Task[]
+  focusCycles   FocusCycle[]
+  memos         Memo[]
+  reviews       Review[]
+  feedbacks     Feedback[]
+  aiConversations AiConversation[]
+  aiUsage       AiUsage[]
+  setting       UserSetting?
+
+  @@map("users")
+}
+
+model Vision {
+  id        String   @id @default(uuid())
+  userId    String
+  content   String
+  startAge  Int?
+  endAge    Int?
+  status    String   @default("upcoming")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objectives Objective[]
+
+  @@index([userId])
+  @@map("visions")
+}
+
+model GoalGroup {
+  id        String   @id @default(uuid())
+  userId    String
+  parentId  String?
+  name      String
+  color     String   @default("#409EFF")
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent     GoalGroup?  @relation("GoalGroupTree", fields: [parentId], references: [id], onDelete: Cascade)
+  children   GoalGroup[] @relation("GoalGroupTree")
+  objectives Objective[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@map("goal_groups")
+}
+
+model Objective {
+  id           String   @id @default(uuid())
+  userId       String
+  goalGroupId  String
+  visionId     String?
+  title        String
+  color        String   @default("#409EFF")
+  startAt      DateTime?
+  endAt        DateTime?
+  motivations  Json     @default("[]")
+  feasibilities Json    @default("[]")
+  status       String   @default("unplanned")
+  weight       Int      @default(100)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goalGroup    GoalGroup     @relation(fields: [goalGroupId], references: [id], onDelete: Cascade)
+  vision       Vision?       @relation(fields: [visionId], references: [id], onDelete: SetNull)
+  keyResults   KeyResult[]
+  reviews      Review[]
+  focusCycles  FocusCycleObjective[]
+  tasks        Task[]
+
+  @@index([userId])
+  @@index([goalGroupId])
+  @@index([visionId])
+  @@index([status])
+  @@map("objectives")
+}
+
+model KeyResult {
+  id              String   @id @default(uuid())
+  objectiveId     String
+  title           String
+  emoji           String   @default("🌟")
+  initialValue    Float
+  targetValue     Float
+  currentValue    Float    @default(0)
+  calculationType String   @default("sum")
+  customFormula   String?
+  weight          Int      @default(100)
+  minRecordCount  Int      @default(0)
+  sortOrder       Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  records   Record[]
+
+  @@index([objectiveId])
+  @@map("key_results")
+}
+
+model Record {
+  id           String   @id @default(uuid())
+  keyResultId  String
+  value        Float
+  note         String?
+  recordedAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  keyResult KeyResult @relation(fields: [keyResultId], references: [id], onDelete: Cascade)
+
+  @@index([keyResultId])
+  @@index([recordedAt])
+  @@map("records")
+}
+
+model Memo {
+  id        String   @id @default(uuid())
+  userId    String
+  ownerType String
+  ownerId   String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([ownerType, ownerId])
+  @@map("memos")
+}
+
+model Task {
+  id                String   @id @default(uuid())
+  userId            String
+  objectiveId       String?
+  title             String
+  description       String?
+  status            String   @default("pending")
+  completedAt       DateTime?
+  scheduledAt       DateTime?
+  repeatRule        String   @default("none")
+  repeatEndDate     DateTime?
+  contribution      String?
+  syncedToCalendar  Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objective Objective? @relation(fields: [objectiveId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([scheduledAt])
+  @@index([status])
+  @@map("tasks")
+}
+
+model FocusCycle {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  startAt   DateTime
+  endAt     DateTime
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  objectives FocusCycleObjective[]
+
+  @@index([userId, isActive])
+  @@map("focus_cycles")
+}
+
+model FocusCycleObjective {
+  id           String  @id @default(uuid())
+  focusCycleId String
+  objectiveId  String
+  weight       Int     @default(100)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  focusCycle FocusCycle @relation(fields: [focusCycleId], references: [id], onDelete: Cascade)
+  objective  Objective  @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+
+  @@unique([focusCycleId, objectiveId])
+  @@index([focusCycleId])
+  @@index([objectiveId])
+  @@map("focus_cycle_objectives")
+}
+
+model Review {
+  id             String   @id @default(uuid())
+  objectiveId    String
+  userId         String
+  type           String
+  version        Int      @default(1)
+  krScores       Json
+  selfRating     Float
+  objectiveScore Int?
+  problems       String?
+  solutions      String?
+  thoughts       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  objective Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([objectiveId])
+  @@index([userId, type])
+  @@map("reviews")
+}
+
+model UserSetting {
+  id     String @id @default(uuid())
+  userId String @unique
+  data   Json   @default("{}")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_settings")
+}
+
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String
+  content   String
+  contact   String?
+  status    String   @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@map("feedbacks")
+}
+
+model AiConversation {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  intent    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AiMessage[]
+
+  @@index([userId])
+  @@map("ai_conversations")
+}
+
+model AiMessage {
+  id             String   @id @default(uuid())
+  conversationId String
+  role           String
+  content        String
+  metadata       Json     @default("{}")
+  tokensUsed     Int      @default(0)
+  createdAt      DateTime @default(now())
+
+  conversation AiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("ai_messages")
+}
+
+model AiUsage {
+  id         String   @id @default(uuid())
+  userId     String
+  intent     String
+  tokensUsed Int      @default(0)
+  model      String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("ai_usage")
+}

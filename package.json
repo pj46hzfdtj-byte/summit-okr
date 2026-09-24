@@ -1,0 +1,30 @@
+{
+  "name": "summit-okr",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Summit OKR - 基于 OKR 理念的个人目标管理系统（面试作品集）",
+  "scripts": {
+    "dev:backend": "pnpm --filter @summit-okr/backend dev",
+    "dev:web": "pnpm --filter @summit-okr/web-vue dev",
+    "dev": "concurrently \"pnpm dev:backend\" \"pnpm dev:web\"",
+    "build:backend": "pnpm --filter @summit-okr/backend build",
+    "build:web": "pnpm --filter @summit-okr/web-vue build",
+    "build:types": "pnpm --filter @summit-okr/api-types build",
+    "db:generate": "pnpm --filter @summit-okr/backend prisma:generate",
+    "db:migrate": "pnpm --filter @summit-okr/backend prisma:migrate",
+    "db:seed": "pnpm --filter @summit-okr/backend prisma:seed",
+    "db:studio": "pnpm --filter @summit-okr/backend prisma:studio",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "install:all": "pnpm install"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "typescript": "^5.4.5"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@9.0.0"
+}

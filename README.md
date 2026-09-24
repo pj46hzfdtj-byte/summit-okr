@@ -2,6 +2,14 @@
 
 基于 OKR 理念的个人目标管理系统，多端技术栈实现。
 
+## 界面预览
+
+以下为本仓库 Vue Web 端使用演示账号运行时的画面。
+
+| 摘要 | 甘特图 |
+| --- | --- |
+| ![Vue Web 摘要页](docs/preview/summary.png) | ![Vue Web 甘特图](docs/preview/gantt.png) |
+
 ## 技术栈
 
 - **后端**: Nest.js + TypeScript + Prisma + PostgreSQL + Redis
